@@ -1,0 +1,156 @@
+// A photocell love compatibility game. To play the game, you either need two people or two fingers to press on each photocell. Depending on how much light is let through from you pressing on the photocell, the program will give you a randomized number from a certain range. The two values are then added together and divided in half to give you a score out of 100. If you score between 0-30, you will see a blue light. If you score between 31-60, you will see a yellow light. If you score between 61-85, you will see an orange light. Finally, if you score between 86-100, you will see a red light, meaning the highest compatibility. You can also see the player values and the overall compatibility score in the serial monitor. To play again, you simply need to hold the photocells and press the button to reset and get a new score. 
+
+int R = 2;
+int G = 3;
+int B = 4;
+
+int resetButton = 5; // Pin Number for reset button
+int buttonState = 0;
+int gameState = 1;
+
+int lightpin1 = A1; // Pin Number
+int lightVal1 = 0;
+int lightpin2 = A5; // Pin Number
+int lightVal2 = 0;
+
+//int game = 1;
+int player1State = 0;
+int player2State = 0;
+
+int player1 = 0;
+int player2 = 0;
+int compScore = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(R,OUTPUT);
+  pinMode(G,OUTPUT);
+  pinMode(B,OUTPUT);
+  pinMode(resetButton,INPUT);
+
+  Serial.begin(9600);
+  while(!Serial){
+    //This doesn't start the void loop until we open the Serial monitor
+  }
+
+  Serial.println("This is a compatibility test.");
+  Serial.println("Have each person put their thumb on the photocell to figure out your compatibility!");
+  delay(2000); // 2 Sec delay
+  Serial.println();
+  Serial.println("Press the button to begin your compatibility test.");
+  Serial.println();
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  buttonState = digitalRead(resetButton);
+  if (buttonState == HIGH){
+    // If the button is pressed, the game state will change to 0 and the game will reset.
+    gameState = 0; 
+    
+    // All the scores will be reset here.
+    player1State = 0;
+    player1 = 0;
+    player2State = 0;
+    player2 = 0;
+    compScore = 0;
+  }
+  lightVal1 = analogRead(lightpin1);
+  lightVal2 = analogRead(lightpin2);
+
+  /**
+  if (gameState == 0){
+    lightVal1 = analogRead(lightpin1);
+    lightVal2 = analogRead(lightpin2);
+    Serial.print("lightVal1 : ");
+    Serial.print(lightVal1);
+    Serial.print("    ");
+    Serial.print("lightVal2 : ");
+    Serial.println(lightVal2);
+  } else {}
+  **/
+
+  if (gameState == 0){
+    gameState = 1;
+
+    //Player 1
+    if (player1State == 0){
+      player1State = 1;
+      if (player1 == 0){
+        delay(1000); // Gives 1 seconds before determining the values.
+        if (lightVal1 > 350){
+          player1 = random(1,20);
+        }
+        if (lightVal1 < 350 && lightVal1 > 150){
+          player1 = random(20,60);
+        }
+        if (lightVal1 < 150 && lightVal1 > 80){
+          player1 = random(60,85);
+        }
+        if (lightVal1 < 80){
+          player1 = random(85,100);
+        }
+      }
+      Serial.println();
+      Serial.println();
+      Serial.println();
+      Serial.print("player1 score : ");
+      Serial.print(player1);
+    }
+
+    //Player 2
+    if (player2State == 0){
+      player2State = 1;
+      if (player2 == 0){
+        if (lightVal2 > 350){
+          player2 = random(1,20);
+        }
+        if (lightVal2 < 350 && lightVal2 > 150){
+          player2 = random(20,60);
+        }
+        if (lightVal2 < 150 && lightVal2 > 80){
+          player2 = random(60,85);
+        }
+        if (lightVal2 < 80){
+          player2 = random(85,100);
+        }
+      }
+      Serial.print("    ");
+      Serial.print("player2 score : ");
+      Serial.print(player2);
+      Serial.println();
+    }
+
+    //Gives the compatibility score.
+    compScore = (player1 + player2)/2;
+    Serial.println();
+    Serial.print("Your compatibility score is ");
+    Serial.print(compScore);
+    Serial.println("!");
+
+    //Shows the compatibility score through different colored lights
+    if (compScore > 0 && compScore <= 30){
+      RGB_Light(54, 130, 255); //Blue
+    }
+    if (compScore > 30 && compScore <= 60){
+      RGB_Light(251, 250, 0); //Yellow
+    }
+    if (compScore > 60 && compScore <= 85){
+      RGB_Light(255, 50, 0); //Orange
+    }
+    if (compScore > 85 && compScore <= 100){
+      RGB_Light(251, 20, 20); //Red
+    }
+    
+    Serial.println();
+    Serial.print("Press the button if you want to play again!");
+  }
+}
+
+//Allows us to write the light as RGB_Light(#,#,#) in the void loop to create different colors. 
+void RGB_Light (int Red, int Green, int Blue){
+  analogWrite(R,Red);
+  analogWrite(G,Green);
+  analogWrite(B, Blue);
+}
